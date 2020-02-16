@@ -380,6 +380,7 @@ class SynthesisModule(nn.Module):
   def forward(self, w):
     lod = self.lod.cpu().tolist()
     x = self.layer0(w[:, 0])
+    # x 为第一层 w[:,0] == w[:,0,:]
     for block_idx in range(1, len(self.channels)):
       if block_idx + lod < len(self.channels):
         layer_idx = 2 * block_idx - 2

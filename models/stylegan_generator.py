@@ -13,6 +13,7 @@ import torch
 from . import model_settings
 from .stylegan_generator_model import StyleGANGeneratorModel
 from .base_generator import BaseGenerator
+import math
 
 __all__ = ['StyleGANGenerator']
 
@@ -74,6 +75,7 @@ class StyleGANGenerator(BaseGenerator):
 
     self.logger.info(f'Loading tensorflow model from `{self.tf_model_path}`.')
     tf.InteractiveSession()
+    self.logger.info(f'begin loading')
     with open(self.tf_model_path, 'rb') as f:
       _, _, tf_model = pickle.load(f)
     self.logger.info(f'Successfully loaded!')
@@ -276,6 +278,8 @@ class StyleGANGenerator(BaseGenerator):
         style = self.model.synthesis.__getattr__(
             f'layer{i}').epilogue.style_mod.dense(wps[:, i, :])
         results[f'style{i:02d}'] = self.get_value(style)
+        # 引号前加f，在{和}字符间写可以引用的变量或字面值的 Python 表达式
+        # {i:02d} : 对于小于两位的数字显示
 
     if generate_image:
       images = self.model.synthesis(wps)

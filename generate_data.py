@@ -39,10 +39,13 @@ def parse_args():
                            '(default: 1)')
   parser.add_argument('-s', '--latent_space_type', type=str, default='z',
                       choices=['z', 'Z', 'w', 'W', 'wp', 'wP', 'Wp', 'WP'],
+  # WP: 即W+
                       help='Latent space used in Style GAN. (default: `Z`)')
   parser.add_argument('-S', '--generate_style', action='store_true',
                       help='If specified, will generate layer-wise style codes '
                            'in Style GAN. (default: do not generate styles)')
+  #'store_true' and 'store_false' - 这些是 'store_const' 分别用作存储 True 和 False 值的特殊用例。
+  # 另外，它们的默认值分别为 False 和 True
   parser.add_argument('-I', '--generate_image', action='store_false',
                       help='If specified, will skip generating images in '
                            'Style GAN. (default: generate images)')
@@ -74,6 +77,7 @@ def main():
   else:
     logger.info(f'  Sample latent codes randomly.')
     latent_codes = model.easy_sample(args.num, **kwargs)
+    # latent_code 是否保存
   total_num = latent_codes.shape[0]
 
   logger.info(f'Generating {total_num} samples.')
@@ -88,6 +92,7 @@ def main():
                                       generate_style=args.generate_style,
                                       generate_image=args.generate_image)
     for key, val in outputs.items():
+      # what is outputs' key?
       if key == 'image':
         for image in val:
           save_path = os.path.join(args.output_dir, f'{pbar.n:06d}.jpg')
@@ -103,9 +108,9 @@ def main():
 
   logger.info(f'Saving results.')
   for key, val in results.items():
+    # key: z, w, wp, f'style{i:02d}', result
     save_path = os.path.join(args.output_dir, f'{key}.npy')
     np.save(save_path, np.concatenate(val, axis=0))
-
 
 if __name__ == '__main__':
   main()

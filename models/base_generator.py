@@ -69,6 +69,9 @@ class BaseGenerator(object):
     Raises:
       AttributeError: If some necessary attributes are missing.
     """
+    """MODEL_POOL
+    将model的设置进行初始化
+    """
     self.model_name = model_name
     for key, val in model_settings.MODEL_POOL[model_name].items():
       setattr(self, key, val)

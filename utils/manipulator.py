@@ -27,7 +27,7 @@ def train_boundary(latent_codes,
   normalized with unit norm.
 
   Args:
-    latent_codes: Input latent codes as training data.
+    latent_codes: Input latent codes as training data. Here just about z/w latent code.
     scores: Input attribute scores used to generate training labels.
     chosen_num_or_ratio: How many samples will be chosen as positive (negative)
       samples. If this field lies in range (0, 0.5], `chosen_num_or_ratio *
