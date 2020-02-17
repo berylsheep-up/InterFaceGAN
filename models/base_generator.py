@@ -162,6 +162,14 @@ class BaseGenerator(object):
     """Wraps functions `sample()` and `preprocess()` together."""
     return self.preprocess(self.sample(num))
 
+  def complicate_sample(self, num):
+    """the returning latent code is meaning.
+    Wraps functions `meaning_sample()` and `preprocess()` together
+    Arguments:
+      num {[int]} -- [latent code's num]
+    """
+    return self.preprocess(self.meaning_sample(num))
+
   def synthesize(self, latent_codes):
     """Synthesizes images with given latent codes.
 

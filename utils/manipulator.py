@@ -79,6 +79,7 @@ def train_boundary(latent_codes,
   else:
     chosen_num = int(chosen_num_or_ratio)
   chosen_num = min(chosen_num, num_samples // 2)
+  print("chosen_num = {}".format(chosen_num))
 
   logger.info(f'Spliting training and validation sets:')
   train_num = int(chosen_num * split_ratio)
@@ -104,6 +105,7 @@ def train_boundary(latent_codes,
                               np.zeros(val_num, dtype=np.int)], axis=0)
   logger.info(f'  Validation: {val_num} positive, {val_num} negative.')
   # Remaining set.
+  # 关于decision_value的设定还可以再参考 比如设定 decision_value = 0.5?
   remaining_num = num_samples - chosen_num * 2
   remaining_data = latent_codes[chosen_num:-chosen_num]
   remaining_scores = scores[chosen_num:-chosen_num]
@@ -196,7 +198,7 @@ def linear_interpolate(latent_code,
                        boundary,
                        start_distance=-3.0,
                        end_distance=3.0,
-                       steps=10):
+                       steps=11):
   """Manipulates the given latent code with respect to a particular boundary.
 
   Basically, this function takes a latent code and a boundary as inputs, and

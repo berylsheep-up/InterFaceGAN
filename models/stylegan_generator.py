@@ -133,6 +133,37 @@ class StyleGANGenerator(BaseGenerator):
       total_distance += distance
     self.logger.info(f'Average distance is {total_distance / test_num:.6e}.')
 
+  def meaning_sample(self, num, latent_space_type='W'):
+    """Samples meaning latent codes randomly. If latent_space_type is "W", then we sample "Z" first and 
+    get the "W" through the network providing the z.
+    
+    Arguments:
+      num {int} -- [description]
+    
+    Keyword Arguments:
+      latent_space_type {str} -- [choices=['W','Z','WP']] (default: {'W'})
+    """
+    latent_space_type = latent_space_type.upper()
+    latent_codes = np.random.randn(num, self.latent_space_dim)
+    if latent_space_type == 'Z':
+      codes = latent_codes
+    elif latent_space_type == 'W':
+      zs = torch.from_numpy(latent_codes).type(torch.FloatTensor)
+      zs = zs.to(self.run_device)
+      ws = self.model.mapping(zs)
+      codes = self.get_value(ws)
+    elif latent_space_type == 'WP':
+      zs = torch.from_numpy(latent_codes).type(torch.FloatTensor)
+      zs = zs.to(self.run_device)
+      ws = self.model.mapping(zs)
+      wps = self.model.truncation(ws)
+      codes = self.get_value(wps)
+    else:
+      raise ValueError(f'Latent space type `{latent_space_type}` is invalid!')
+
+    return codes.astype(np.float32)
+
+
   def sample(self, num, latent_space_type='Z'):
     """Samples latent codes randomly.
 
@@ -176,7 +207,8 @@ class StyleGANGenerator(BaseGenerator):
     """
     if not isinstance(latent_codes, np.ndarray):
       raise ValueError(f'Latent codes should be with type `numpy.ndarray`!')
-
+    print("latent_space_type:{}".format(latent_space_type))
+    
     latent_space_type = latent_space_type.upper()
     if latent_space_type == 'Z':
       latent_codes = latent_codes.reshape(-1, self.latent_space_dim)
@@ -194,6 +226,8 @@ class StyleGANGenerator(BaseGenerator):
   def easy_sample(self, num, latent_space_type='Z'):
     return self.preprocess(self.sample(num, latent_space_type),
                            latent_space_type)
+  def complicate_sample(self, num, latent_space_type='W'):
+    return self.preprocess(self.meaning_sample(num, latent_space_type),latent_space_type)
 
   def synthesize(self,
                  latent_codes,

@@ -15,18 +15,19 @@ import numpy as np
 
 from utils.logger import setup_logger
 from utils.manipulator import train_boundary
+from config import config
 
 def parse_args():
   """Parses arguments."""
   parser = argparse.ArgumentParser(
       description='Train semantic boundary with given latent codes and '
                   'attribute scores.')
-  parser.add_argument('-o', '--output_dir', type=str, required=True,
-                      help='Directory to save the output results. (required)')
-  parser.add_argument('-c', '--latent_codes_path', type=str, required=True,
-                      help='Path to the input latent codes. (required)')
-  parser.add_argument('-s', '--scores_path', type=str, required=True,
-                      help='Path to the input attribute scores. (required)')
+  # parser.add_argument('-o', '--output_dir', type=str, required=True,
+  #                     help='Directory to save the output results. (required)')
+  # parser.add_argument('-c', '--latent_codes_path', type=str, required=True,
+  #                     help='Path to the input latent codes. (required)')
+  # parser.add_argument('-s', '--scores_path', type=str, required=True,
+  #                     help='Path to the input attribute scores. (required)')
   parser.add_argument('-n', '--chosen_num_or_ratio', type=float, default=0.02,
                       help='How many samples to choose for training. '
                            '(default: 0.2)')
@@ -36,6 +37,8 @@ def parse_args():
   parser.add_argument('-V', '--invalid_value', type=float, default=None,
                       help='Sample whose attribute score is equal to this '
                            'field will be ignored. (default: None)')
+  parser.add_argument('-t', '--latent_space_type', type=str, default='w',
+                      choices=['w','z','wp'])
 
   return parser.parse_args()
 
@@ -43,17 +46,20 @@ def parse_args():
 def main():
   """Main function."""
   args = parse_args()
-  logger = setup_logger(args.output_dir, logger_name='generate_data')
+  logger = setup_logger(config.OUTPUT_PATH, logger_name='generate_data')
 
   logger.info('Loading latent codes.')
-  if not os.path.isfile(args.latent_codes_path):
-    raise ValueError(f'Latent codes `{args.latent_codes_path}` does not exist!')
-  latent_codes = np.load(args.latent_codes_path)
+  latent_codes_path = os.path.join(config.OUTPUT_PATH,"{}.npy".format(args.latent_space_type))
+
+  if not os.path.isfile(latent_codes_path):
+    raise ValueError(f'Latent codes `{latent_codes_path}` does not exist!')
+  latent_codes = np.load(latent_codes_path)
 
   logger.info('Loading attribute scores.')
-  if not os.path.isfile(args.scores_path):
-    raise ValueError(f'Attribute scores `{args.scores_path}` does not exist!')
-  scores = np.load(args.scores_path)
+  if not os.path.isfile(config.SCORES_PATH):
+    raise ValueError(f'Attribute scores `{config.SCORES_PATH}` does not exist!')
+  scores = np.load(config.SCORES_PATH)
+  print(scores.shape)
 
   boundary = train_boundary(latent_codes=latent_codes,
                             scores=scores,
@@ -61,7 +67,7 @@ def main():
                             split_ratio=args.split_ratio,
                             invalid_value=args.invalid_value,
                             logger=logger)
-  np.save(os.path.join(args.output_dir, 'boundary.npy'), boundary)
+  np.save(config.BOUNDARY_PATH, boundary)
 
 
 if __name__ == '__main__':

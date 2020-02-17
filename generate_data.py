@@ -19,17 +19,18 @@ from models.model_settings import MODEL_POOL
 from models.pggan_generator import PGGANGenerator
 from models.stylegan_generator import StyleGANGenerator
 from utils.logger import setup_logger
+from config import config
 
 
 def parse_args():
   """Parses arguments."""
   parser = argparse.ArgumentParser(
       description='Generate images with given model.')
-  parser.add_argument('-m', '--model_name', type=str, required=True,
-                      choices=list(MODEL_POOL),
-                      help='Name of the model for generation. (required)')
-  parser.add_argument('-o', '--output_dir', type=str, required=True,
-                      help='Directory to save the output results. (required)')
+  # parser.add_argument('-m', '--model_name', type=str, required=True,
+  #                     choices=list(MODEL_POOL),
+  #                     help='Name of the model for generation. (required)')
+  # parser.add_argument('-o', '--output_dir', type=str, required=True,
+  #                     help='Directory to save the output results. (required)')
   parser.add_argument('-i', '--latent_codes_path', type=str, default='',
                       help='If specified, will load latent codes from given '
                            'path instead of randomly sampling. (optional)')
@@ -56,15 +57,15 @@ def parse_args():
 def main():
   """Main function."""
   args = parse_args()
-  logger = setup_logger(args.output_dir, logger_name='generate_data')
+  logger = setup_logger(config.OUTPUT_PATH, logger_name='generate_data')
 
   logger.info(f'Initializing generator.')
-  gan_type = MODEL_POOL[args.model_name]['gan_type']
+  gan_type = MODEL_POOL[config.MODEL_NAME]['gan_type']
   if gan_type == 'pggan':
-    model = PGGANGenerator(args.model_name, logger)
+    model = PGGANGenerator(config.MODEL_NAME, logger)
     kwargs = {}
   elif gan_type == 'stylegan':
-    model = StyleGANGenerator(args.model_name, logger)
+    model = StyleGANGenerator(config.MODEL_NAME, logger)
     kwargs = {'latent_space_type': args.latent_space_type}
   else:
     raise NotImplementedError(f'Not implemented GAN type `{gan_type}`!')
@@ -95,7 +96,7 @@ def main():
       # what is outputs' key?
       if key == 'image':
         for image in val:
-          save_path = os.path.join(args.output_dir, f'{pbar.n:06d}.jpg')
+          save_path = os.path.join(config.IMAGE_PATH, f'{pbar.n:06d}.jpg')
           cv2.imwrite(save_path, image[:, :, ::-1])
           pbar.update(1)
       else:
@@ -109,7 +110,7 @@ def main():
   logger.info(f'Saving results.')
   for key, val in results.items():
     # key: z, w, wp, f'style{i:02d}', result
-    save_path = os.path.join(args.output_dir, f'{key}.npy')
+    save_path = os.path.join(config.OUTPUT_PATH, f'{key}.npy')
     np.save(save_path, np.concatenate(val, axis=0))
 
 if __name__ == '__main__':
