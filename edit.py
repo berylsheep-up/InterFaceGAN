@@ -91,7 +91,6 @@ def main():
   else:
     logger.info(f'  Sample latent codes randomly.')
     latent_codes = model.complicate_sample(args.num, **kwargs)
-    # 只是简单地得到适合维度的latent code，并不是真正意义上的w或者wp
   np.save(os.path.join(config.OUTPUT_PATH, 'latent_codes.npy'), latent_codes)
   total_num = latent_codes.shape[0]
 
